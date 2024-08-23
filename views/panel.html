@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>机器人管理</title>
+    <link rel="stylesheet" href="/static/css/tabler.css">
+    <script src="/static/js/tabler.js"></script>
+    <style>
+        .dropdown-menu-arrow.dropdown-menu-end:before {
+            left: 28%;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header class="navbar navbar-expand-md d-print-none header1">
+            <div class="container-xl">
+                <div class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+                    <a href="/">
+                        <img src="/static/img/MCC_logo.png" alt="" width="110" height="32" viewBox="0 0 232 68" class="navbar-brand-image">
+                    </a>
+                    <span>
+                    &nbsp;MCC Bot Manager
+                </span>
+                </div>
+                <div class="nav-item dropdown">
+                    <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
+                        <span class="avatar avatar-sm"></span>
+                        <div class="d-none d-xl-block ps-2">
+                            <div>{{.username}}</div>
+                            <div class="mt-1 small text-secondary">权限等级:{{.permission}}</div>
+                        </div>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow" style="left: 50%; transform: translateX(-50%);">
+                        <a href="/setting" class="dropdown-item">账户信息</a>
+                        <a href="/logout" class="dropdown-item">登出</a>
+                    </div>
+                </div>
+
+            </div>
+        </header>
+    </div>
+</body>
+</html>
