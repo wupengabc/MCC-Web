@@ -21,7 +21,6 @@ func init() {
 	} else {
 		fmt.Println("数据库连接成功")
 	}
-
 	Db.SetMaxIdleConns(3)
 	Db.SetMaxOpenConns(10)
 	Db.ShowSQL(true)

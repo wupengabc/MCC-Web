@@ -9,36 +9,85 @@
         .dropdown-menu-arrow.dropdown-menu-end:before {
             left: 28%;
         }
+
+        body {
+            max-height: 100%;
+        }
+        red {
+            color: red;
+        }
+        green {
+            color: green;
+        }
     </style>
 </head>
 <body>
-    <div class="page">
-        <header class="navbar navbar-expand-md d-print-none header1">
-            <div class="container-xl">
-                <div class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
-                    <a href="/">
-                        <img src="/static/img/MCC_logo.png" alt="" width="110" height="32" viewBox="0 0 232 68" class="navbar-brand-image">
-                    </a>
-                    <span>
+<div class="page">
+    <header class="navbar navbar-expand-md d-print-none header1">
+        <div class="container-xl">
+            <div class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+                <a href="/">
+                    <img src="/static/img/MCC_logo.png" alt="" width="110" height="32" viewBox="0 0 232 68"
+                         class="navbar-brand-image">
+                </a>
+                <span>
                     &nbsp;MCC Bot Manager
                 </span>
+            </div>
+            <div class="nav-item dropdown">
+                <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown"
+                   aria-label="Open user menu">
+                    <span class="avatar avatar-sm"></span>
+                    <div class="d-none d-xl-block ps-2">
+                        <div>{{.username}}</div>
+                        <div class="mt-1 small text-secondary">权限等级:{{.permission}}</div>
+                    </div>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow"
+                     style="left: 50%; transform: translateX(-50%);">
+                    <a href="/setting" class="dropdown-item">账户信息</a>
+                    <a href="/logout" class="dropdown-item">登出</a>
                 </div>
-                <div class="nav-item dropdown">
-                    <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
-                        <span class="avatar avatar-sm"></span>
-                        <div class="d-none d-xl-block ps-2">
-                            <div>{{.username}}</div>
-                            <div class="mt-1 small text-secondary">权限等级:{{.permission}}</div>
+            </div>
+        </div>
+    </header>
+    <div class="page-wrapper">
+        <div class="page-body">
+            <div class="container-xl">
+                <div class="card">
+                    <div class="row g-0">
+                        <div class="col-12 col-lg-5 col-xl-3 border-end">
+                            <div class="card-header d-none d-md-block">
+                                <div class="input-icon">
+                                  <span class="input-icon-addon"> <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                                         stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                                         stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path
+                                            d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M21 21l-6 -6"/></svg>
+                                  </span>
+                                    <input type="text" value="" class="form-control" placeholder="Search…" aria-label="Search"/>
+                                </div>
+                            </div>
+                            <div class="card-body p-0 scrollable" style="max-height: 35rem">
+                                <div class="nav flex-column nav-pills" role="tablist">
+                                    <a href="#chat-1" class="nav-link text-start mw-100 p-3 active" id="chat-1-tab" data-bs-toggle="pill" role="tab" aria-selected="true">
+                                        <div class="row align-items-center flex-fill">
+                                            <div class="col-auto"><span class="avatar" style="background-image: url(https://mineskin.eu/avatar/7728)"></span>
+                                            </div>
+                                            <div class="col text-body">
+                                                <div>7728</div>
+                                                <div class="text-secondary text-truncate w-100"><red>未运行 </red><red>未连接</red></div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow" style="left: 50%; transform: translateX(-50%);">
-                        <a href="/setting" class="dropdown-item">账户信息</a>
-                        <a href="/logout" class="dropdown-item">登出</a>
                     </div>
                 </div>
-
             </div>
-        </header>
+        </div>
     </div>
+</div>
 </body>
 </html>
