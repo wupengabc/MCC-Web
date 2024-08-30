@@ -89,7 +89,7 @@
             <button type="submit" class="btn btn-primary w-100" id="submit">注册</button>
             <br>
             <br>
-            <a href="/login" class="btn w-100">已有账户?点我登录</a>
+            <a href="/login" class="btn w-100" id="login">已有账户?点我登录</a>
           </div>
         </form>
       </div>
@@ -123,6 +123,7 @@
     document.getElementById("password").disabled = true
     document.getElementById("submit").disabled = true
     document.getElementById("code").disabled = true
+    document.getElementById("login").disabled = true
     fetch('/reg', {
       method: 'POST',
       body: formData,
@@ -136,6 +137,7 @@
                 document.getElementById("password").disabled = false
                 document.getElementById("submit").disabled = false
                 document.getElementById("code").disabled = false
+                document.getElementById("login").disabled = false
               } else {
                 warningText.textContent = "你已成功注册,正在为你跳转登录界面"
                 SuccessAlert = document.getElementById("warning")
@@ -164,8 +166,9 @@
     document.getElementById("password").disabled = true
     document.getElementById("submit").disabled = true
     document.getElementById("code").disabled = true
+    document.getElementById("login").disabled = true
     setInterval(()=>{
-      window.location.href = "/admin"
+      window.location.href = "/panel"
     },3000)
   }
 </script>

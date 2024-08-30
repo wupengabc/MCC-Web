@@ -6,6 +6,7 @@ import (
 	beego "github.com/beego/beego/v2/server/web"
 	"mcc_web/models"
 	_ "mcc_web/routers"
+	"strconv"
 	"time"
 )
 
@@ -13,6 +14,7 @@ func syncData() {
 	servers := models.GetAllServer()
 	for _, server := range servers {
 		str := models.GetData("http://" + server.Server + "/" + server.Key + "/botlist")
+		id := server.Id
 		if str == "error" {
 			continue
 		} else {
@@ -23,7 +25,7 @@ func syncData() {
 				return
 			}
 			for _, row := range data {
-				models.InsertBot(row[1].(string), row[2].(string), row[3].(string), row[4].(string), row[5].(string), server.Server, row[6].(string))
+				models.InsertBot(row[1].(string), row[2].(string), row[3].(string), row[4].(string), row[5].(string), strconv.FormatInt(id, 10), row[6].(string))
 			}
 		}
 	}

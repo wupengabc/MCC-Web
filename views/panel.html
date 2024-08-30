@@ -4,22 +4,105 @@
     <meta charset="UTF-8">
     <title>机器人管理</title>
     <link rel="stylesheet" href="/static/css/tabler.css">
+    <link rel="stylesheet" href="/static/css/APlayer.min.css">
     <script src="/static/js/tabler.js"></script>
+    <script src="/static/js/APlayer.min.js"></script>
     <style>
         .dropdown-menu-arrow.dropdown-menu-end:before {
             left: 28%;
         }
-
         body {
             max-height: 100%;
         }
-        red {
+        .red {
             color: red;
         }
-        green {
+        .green {
             color: green;
         }
+        .gray {
+            color: gray;
+        }
+        iframe {
+            transition: opacity 0.3s ease-in-out;
+            opacity: 0; /* 默认透明 */
+        }
+        iframe.visible {
+            opacity: 1; /* 可见 */
+        }
+        .fade {
+            transition: opacity 0.3s ease-in-out;
+            opacity: 0; /* 默认透明 */
+        }
+        .fade.visible {
+            opacity: 1; /* 可见 */
+        }
+        .modal.fade1 .modal-dialog {
+            transition: transform 0.3s ease-out;
+            transform: scale(0.7); /* 初始缩放 */
+        }
+        .modal.show .modal-dialog {
+            transform: scale(1); /* 完整缩放 */
+        }
     </style>
+    <script>
+        function switchmanage(name, belong, server) {
+            getbotlist()
+            let item = document.getElementById("manager");
+
+            // 移除现有的可见类，开始渐变效果
+            item.classList.remove("visible");
+
+            // 设置一个定时器，在渐变结束后切换src
+            setTimeout(() => {
+                item.src = `/manager?name=${name}&belong=${belong}&server=${server}`;
+
+                // 在新内容加载后添加可见类，完成渐变效果
+                item.onload = () => item.classList.add("visible");
+            }, 300); // 500ms 与 CSS 中的过渡时间相匹配
+        }
+
+        function insertBotContent(name, status, belong, server) {
+            text = ""
+            color = ""
+            if (status === "0"){
+                text = "从未运行过"
+                color = "gray"
+            } else if (status === "1") {
+                text = "运行中"
+                color = "green"
+            } else if (status === "2") {
+                text = "未运行"
+                color = "gray"
+            } else if (status === "3") {
+                text = "服务端错误"
+                color = "red"
+            } else if (status === "4") {
+                text = "获取失败"
+                color = "red"
+            } else {
+                text = "获取失败"
+                color = "red"
+            }
+            content =  `
+        <a href="#" class="nav-link text-start mw-100 p-3" id="${name}" data-bs-toggle="pill" role="tab" aria-selected="false" onclick="switchmanage('${name}', '${belong}','${server}')">
+                                        <div class="row align-items-center flex-fill">
+                                            <div class="col-auto"><span class="avatar" style="background-image: url(https://mineskin.eu/avatar/${name})"></span>
+                                            </div>
+                                            <div class="col text-body">
+                                                <div>${name}</div>
+                                                <div class="text-secondary text-truncate w-100"><span class="${color}">${text}</span></div>
+                                            </div>
+                                        </div>
+                                    </a>`
+            item = document.getElementById("botlist")
+            if (status === "1") {
+                item.innerHTML = content + item.innerHTML
+            } else {
+                item.innerHTML += content
+            }
+        }
+    </script>
 </head>
 <body>
 <div class="page">
@@ -37,7 +120,7 @@
             <div class="nav-item dropdown">
                 <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown"
                    aria-label="Open user menu">
-                    <span class="avatar avatar-sm"></span>
+                    <span class="avatar avatar-sm" style="background-image: url('https://mineskin.eu/avatar/{{.username}}')"></span>
                     <div class="d-none d-xl-block ps-2">
                         <div>{{.username}}</div>
                         <div class="mt-1 small text-secondary">权限等级:{{.permission}}</div>
@@ -46,17 +129,82 @@
                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow"
                      style="left: 50%; transform: translateX(-50%);">
                     <a href="/setting" class="dropdown-item">账户信息</a>
+                    <a href="https://gitee.com/sg250/MCC-Web/issues" class="dropdown-item">问题反馈</a>
                     <a href="/logout" class="dropdown-item">登出</a>
                 </div>
             </div>
         </div>
     </header>
     <div class="page-wrapper">
+        <div id="tip"></div>
+        <div class="modal fade1" id="addbot" tabindex="-1">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">添加机器人</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3" id="botcount"></div>
+                        <div class="mb-3">
+                            <label class="form-label">Bot名称</label>
+                            <input type="text" class="form-control" id="botname" name="botname" placeholder="3-16字符，由字母、数字、下划线组成"/>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-label">服务器版本</div>
+                            <select class="form-select" id="version">
+                                <option value="1.20.4" selected>1.20.4</option>
+                                <option value="1.19.4">1.19.4</option>
+                                <option value="1.18.2">1.18.2</option>
+                                <option value="1.17.1">1.17.1</option>
+                                <option value="1.16.5">1.16.5</option>
+                                <option value="1.15.2">1.15.2</option>
+                                <option value="1.14.4">1.14.4</option>
+                                <option value="1.13.2">1.13.2</option>
+                                <option value="1.12.2">1.12.2</option>
+                                <option value="1.11.2">1.11.2</option>
+                                <option value="1.10.2">1.10.2</option>
+                                <option value="1.9.4">1.9.4</option>
+                                <option value="1.8.9">1.8.9</option>
+                                <option value="1.7.10">1.7.10</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-label">是否启用forge支持</div>
+                            <div>
+                                <select class="form-select" id="forge">
+                                    <option value="0" selected>否</option>
+                                    <option value="1">是</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-label">连接的服务器</div>
+                            <div>
+                                <input type="text" class="form-control" id="connection" name="connection" placeholder="域名/IP+端口,端口默认为25565,例如: example.com:25565"/>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-label">使用的服务器</div>
+                            <div>
+                                <select class="form-select" id="server">
+
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" data-bs-dismiss="modal" aria-label="Close">取消</button>
+                        <button class="btn btn-primary ms-auto" id="add" disabled onclick="postaddbot()" data-bs-dismiss="modal" aria-label="Close">添加</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="page-body">
             <div class="container-xl">
                 <div class="card">
                     <div class="row g-0">
-                        <div class="col-12 col-lg-5 col-xl-3 border-end">
+                        <div class="col-12 col-lg-5 col-xl-3 border-end" style="position: relative">
                             <div class="card-header d-none d-md-block">
                                 <div class="input-icon">
                                   <span class="input-icon-addon"> <!-- Download SVG icon from http://tabler-icons.io/i/search -->
@@ -65,23 +213,19 @@
                                          stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path
                                             d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M21 21l-6 -6"/></svg>
                                   </span>
-                                    <input type="text" value="" class="form-control" placeholder="Search…" aria-label="Search"/>
+                                    <input type="text" value="" class="form-control" placeholder="通过Bot名搜索" aria-label="Search"/>
                                 </div>
                             </div>
-                            <div class="card-body p-0 scrollable" style="max-height: 35rem">
-                                <div class="nav flex-column nav-pills" role="tablist">
-                                    <a href="#chat-1" class="nav-link text-start mw-100 p-3 active" id="chat-1-tab" data-bs-toggle="pill" role="tab" aria-selected="true">
-                                        <div class="row align-items-center flex-fill">
-                                            <div class="col-auto"><span class="avatar" style="background-image: url(https://mineskin.eu/avatar/7728)"></span>
-                                            </div>
-                                            <div class="col text-body">
-                                                <div>7728</div>
-                                                <div class="text-secondary text-truncate w-100"><red>未运行 </red><red>未连接</red></div>
-                                            </div>
-                                        </div>
-                                    </a>
+                            <div class="card-body p-0 scrollable">
+                                <div class="nav flex-column nav-pills fade" role="tablist" id="botlist">
                                 </div>
                             </div>
+                            <button class="btn btn-primary btn-icon" style="position: absolute; bottom: 10px; right: 10px;" onclick="getadd()">
+                                <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-circle-plus"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M9 12h6" /><path d="M12 9v6" /></svg>
+                            </button>
+                        </div>
+                        <div class="col-12 col-lg-7 col-xl-9 d-flex flex-column" style="height: 40rem">
+                            <iframe src="" height="100%" id="manager"></iframe>
                         </div>
                     </div>
                 </div>
@@ -89,5 +233,230 @@
         </div>
     </div>
 </div>
+<div id="aplayer"></div>
+<script>
+    const ap = new APlayer({
+        container: document.getElementById('aplayer'),
+        fixed: true,
+        preload: 'none',
+        progress: 'none',
+        autoplay: false,
+        order: 'random'
+    });
+    ap.list.hide()
+    fetch(`http://js.wupeng1.top/audio_data.json`, {
+        method: "GET",
+        headers: { 'Content-Type': 'application/json' } // 通常不需要在GET请求中设置Content-Type头部
+    })
+        .then(response => response.json())
+        .then(data => {
+            for (const item of data.audio) {
+                ap.addAudio(item);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+</script>
+<script>
+    function show_tip(msg) {
+        // 检查是否存在 ID 为 "tips" 的容器
+        let existingTip = document.getElementById("tips");
+        if (existingTip) {
+            // 如果存在，先删除它
+            existingTip.remove();
+        }
+
+        // 创建新的提示内容
+        let content = `
+    <div class="modal fade1" id="tips" tabindex="-1" style="margin-top: 5%">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">提示</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <span>${msg}</span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+
+        // 添加新的提示内容到页面中
+        document.getElementById("tip").innerHTML += content;
+
+        // 显示模态框
+        let model = new bootstrap.Modal(document.getElementById("tips"));
+        model.show();
+    }
+    function showaddbot(content){
+        modal = new bootstrap.Modal(document.getElementById("addbot"))
+        document.getElementById("botcount").innerText = "你的机器人数量: " + content
+        modal.show()
+    }
+    function getbotlist() {
+        const botItem = document.getElementById("botlist");
+
+        // 初始时将列表隐藏
+        botItem.classList.remove("visible");
+
+        fetch("/getbotlist", {
+            method: "GET",
+            headers: { 'Content-Type': 'application/json' }
+        }).then(response => response.text()).then(data => {
+            // 在获取数据后设置一个定时器来显示
+            setTimeout(() => {
+                addbot(data);
+                botItem.classList.add("visible");
+            }, 300); // 0.3s 与 CSS 中的过渡时间相匹配
+        }).catch(error => {
+            setTimeout(() => {
+                addbot("[]");
+                botItem.classList.add("visible");
+            }, 300); // 0.3s 与 CSS 中的过渡时间相匹配
+        });
+    }
+
+    function addbot(botlist) {
+        botlist = JSON.parse(botlist);
+        const botItem = document.getElementById("botlist");
+        botItem.innerHTML = "";
+        for (let item of botlist) {
+            const data = {
+                name: item["Name"],
+                server: item["Server"],
+                belong: item["Belong"],
+            };
+
+            fetch("/getbotstatus", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            }).then(response => response.json())
+                .then(data => {
+                    insertBotContent(item["Name"], data.status, item["Belong"], item["Server"]);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    }
+    function addserverlist(id, name){
+        item3 = document.getElementById("server")
+        content = `<option value="${id}">${name}</option>`
+        item3.innerHTML += content
+    }
+    getbotlist();
+    // 定义函数来检查两个输入框的值是否符合规范
+    function validateForm() {
+        const connectionInput = document.getElementById("connection").value.trim();
+        const botnameInput = document.getElementById("botname").value.trim();
+
+        const connectionRegex = /^(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}:\d{1,5}$|^(?:\d{1,3}\.){3}\d{1,3}:\d{1,5}$/; // 域名或IP加端口
+        const botnameRegex = /^[a-zA-Z0-9_]{3,16}$/; // 3-16字符，由字母、数字、下划线组成
+
+        const isConnectionValid = connectionRegex.test(connectionInput);
+        const isBotnameValid = botnameRegex.test(botnameInput);
+
+        if (isConnectionValid && isBotnameValid) {
+            document.getElementById("add").disabled = false;
+        } else {
+            document.getElementById("add").disabled = true;
+        }
+    }
+
+    // 为 "connection" 和 "botname" 输入框添加事件监听器
+    document.getElementById("connection").addEventListener("input", function() {
+        const input = this.value.trim();
+        const regex = /^(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}:\d{1,5}$|^(?:\d{1,3}\.){3}\d{1,3}:\d{1,5}$/; // 域名或IP加端口
+        if (regex.test(input)) {
+            this.className = "form-control is-valid mb-2"; // 输入符合规范时，应用绿色边框
+        } else {
+            this.className = "form-control is-invalid"; // 输入不符合规范时，应用红色边框
+        }
+        validateForm(); // 检查表单状态
+    });
+
+    document.getElementById("botname").addEventListener("input", function() {
+        const input = this.value.trim();
+        const regex = /^[a-zA-Z0-9_]{3,16}$/; // 3-16字符，由字母、数字、下划线组成
+        if (regex.test(input)) {
+            this.className = "form-control is-valid mb-2"; // 输入符合规范时，应用绿色边框
+        } else {
+            this.className = "form-control is-invalid"; // 输入不符合规范时，应用红色边框
+        }
+        validateForm(); // 检查表单状态
+    });
+
+    function getslist(){
+        fetch("/getserverlist",{
+            method:"GET",
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => response.json()).then(data => {
+            for (let i = 0; i < data.data.idlist.length; i++) {
+                addserverlist(data.data.idlist[i],data.data.namelist[i])
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+        })
+    }
+    getslist()
+    function getadd() {
+        fetch("/getadd", {
+            method: "GET",
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => response.json()).then(data => {
+            if (data.code === 200) {
+                showaddbot(data.data)
+            } else {
+                show_tip(data.data)
+            }
+        }).catch(error => {
+            show_tip(error)
+        })
+    }
+    function postaddbot() {
+        botname = document.getElementById("botname").value
+        version = document.getElementById("version").value
+        forge = document.getElementById("forge").value
+        connection = document.getElementById("connection").value
+        server = document.getElementById("server").value
+        data7 = {
+            name: botname,
+            version: version,
+            forge: forge,
+            connection: connection,
+            server: server
+        }
+        fetch("/addbot", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data7)
+        }).then(response => response.json()).then(data => {
+            show_tip(data.msg)
+            setTimeout(()=>{
+                getbotlist()
+            }, 5000)
+        }).catch(error => {
+            show_tip(error)
+            setTimeout(()=>{
+                getbotlist()
+            }, 5000)
+        })
+    }
+</script>
 </body>
 </html>

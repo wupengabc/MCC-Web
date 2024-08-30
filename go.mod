@@ -4,6 +4,7 @@ go 1.22
 
 require (
 	github.com/beego/beego/v2 v2.1.0
+	github.com/gorilla/websocket v1.5.3
 	github.com/levigross/grequests v0.0.0-20231203190023-9c307ef1f48d
 	github.com/mattn/go-sqlite3 v1.14.16
 	xorm.io/xorm v1.3.9

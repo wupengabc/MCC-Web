@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>管理</title>
+    <link href="/static/css/tabler.css" rel="stylesheet">
+    <link href="/static/css/xterm.css" rel="stylesheet">
+    <script src="/static/js/tabler.js"></script>
+    <script src="/static/js/xterm.js"></script>
+    <style>
+        .xterm-viewport {
+            border-radius: 5px; /* 设置圆角半径 */
+            overflow: hidden; /* 确保内容不会溢出圆角 */
+        }
+        .noradius {
+            border-radius: 0; /* 设置圆角半径 */
+            overflow: hidden;
+        }
+        .terminal {
+            height: 30%;
+            width: 95%;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        .input1 {
+            margin: 0 auto;
+        }
+
+        .xterm-rows {
+            width: 100%;
+        }
+
+        .text {
+            font-size: 20px;
+        }
+
+        .row {
+            width: 95%;
+            margin: 2% auto 0;
+        }
+
+        .xterm-rows span {
+            letter-spacing: 1px !important;; /* 设置字符间距为 3px */
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        .fade-out {
+            animation: fadeOut 0.3s forwards;
+        }
+
+        .modal.fade1 .modal-dialog {
+            transition: transform 0.3s ease-out;
+            transform: scale(0.7); /* 初始缩放 */
+        }
+
+        .modal.show .modal-dialog {
+            transform: scale(1); /* 完整缩放 */
+        }
+        .send {
+            text-align: center;
+            margin: 0 auto;
+        }
+        .commands {
+            margin: 0 auto;
+            height: 10%;
+            background-color: var(--tblr-card-bg);
+            white-space: nowrap; /* 防止自动换行 */
+            overflow-x: scroll; /* 添加横向滚动条 */
+            display: flex; /* 使用flexbox布局 */
+            flex-wrap: nowrap; /* 禁止换行 */
+            scrollbar-width: none;
+        }
+        .sc {
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body style="top: -1.5%">
+<div class="page" id="page">
+    <div class="modal fade1" id="stop_warning" style="margin-top: 5%" tabindex="-1">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+                <div class="modal-status bg-danger"></div>
+                <div class="modal-body text-center py-4">
+                    <svg class="icon mb-2 text-danger icon-lg" fill="none" height="24" stroke="currentColor"
+                         stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0 0h24v24H0z" fill="none" stroke="none"/>
+                        <path d="M12 9v2m0 4v.01"/>
+                        <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"/>
+                    </svg>
+                    <h3>确定关闭机器人?</h3>
+                    <div class="text-secondary">您真的想要关闭机器人吗?关闭后将无法继续挂机</div>
+                </div>
+                <div class="modal-footer">
+                    <div class="w-100">
+                        <div class="row">
+                            <div class="col"><a class="btn w-100" data-bs-dismiss="modal" href="#">
+                                取消
+                            </a></div>
+                            <div class="col"><a class="btn btn-danger w-100" data-bs-dismiss="modal" href="#"
+                                                onclick="stop()">
+                                确认
+                            </a></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="page-wrapper">
+        <div class="row g-2 align-items-center">
+            <div class="col">
+                <!-- Page pre-title -->
+                <div class="page-pretitle" id="status">
+                </div>
+                <h2 class="page-title" id="name">
+                </h2>
+            </div>
+            <!-- Page title actions -->
+            <div class="col-auto ms-auto d-print-none">
+                <div class="btn-list">
+                    <button class="btn btn-primary" id="open" onclick="open_bot()">
+                        <svg class="icon icon-tabler icons-tabler-outline icon-tabler-player-play" fill="none" height="24" stroke="currentColor" stroke-linecap="round"
+                             stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <path d="M0 0h24v24H0z" fill="none" stroke="none"/>
+                            <path d="M7 4v16l13 -8z"/>
+                        </svg>
+                        开启
+                    </button>
+                    <span class="d-none d-sm-inline">
+                            <button class="btn btn-red" id="close" onclick="stop_warning()"><svg
+                                    class="icon icon-tabler icons-tabler-outline icon-tabler-player-stop" fill="none" height="24" stroke="currentColor"
+                                    stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"
+                                    width="24"
+                                    xmlns="http://www.w3.org/2000/svg"><path
+                                    d="M0 0h24v24H0z" fill="none" stroke="none"/><path
+                                    d="M5 5m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z"/></svg>关闭</button>
+                        </span>
+                    <span class="d-none d-sm-inline">
+                            <button class="btn btn-green"><svg class="icon icon-tabler icons-tabler-outline icon-tabler-settings" fill="none" height="24"
+                                                               stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                                               stroke-width="2" viewBox="0 0 24 24"
+                                                               width="24"
+                                                               xmlns="http://www.w3.org/2000/svg"><path
+                                    d="M0 0h24v24H0z" fill="none" stroke="none"/><path
+                                    d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"/><path
+                                    d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/></svg>配置</button>
+                        </span>
+                </div>
+            </div>
+        </div>
+        <div class="page-body">
+            <div class="terminal-container" style="margin-top: -2%">
+                <div class="terminal" id="terminal"></div>
+            </div>
+            <div class="input1 input-group" id="input">
+                <input class="form-control noradius" placeholder="输入指令或者消息" type="text" id="message">
+                <span>
+                        &nbsp;
+                        <button class="btn noradius" onclick="sendmessage()">
+                            <svg  xmlns="http://www.w3.org/2000/svg" style="margin: 0"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-send-2"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4.698 4.034l16.302 7.966l-16.302 7.966a.503 .503 0 0 1 -.546 -.124a.555 .555 0 0 1 -.12 -.568l2.468 -7.274l-2.468 -7.274a.555 .555 0 0 1 .12 -.568a.503 .503 0 0 1 .546 -.124z" /><path d="M6.5 12h14.5" /></svg>
+                        </button>
+                    </span>
+            </div>
+            <br>
+            <div class="sc row" id="sc">
+                <div class="commands col-11" id="card">
+                    <button class="btn btn-sm">快捷指令:</button>&nbsp
+                </div>
+                <span class="col-1">
+                    <button class="btn btn-sm" onclick="toleft()"><</button>
+                    <button class="btn btn-sm" onclick="scrollRight()">></button>
+                    <button class="btn btn-primary btn-sm">±</button>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function stop_warning() {
+        var model = new bootstrap.Modal(document.getElementById("stop_warning"))
+        model.show()
+    }
+
+    function show_tip(msg) {
+        // 检查是否存在 ID 为 "tips" 的容器
+        let existingTip = document.getElementById("tips");
+        if (existingTip) {
+            // 如果存在，先删除它
+            existingTip.remove();
+        }
+
+        // 创建新的提示内容
+        let content = `
+    <div class="modal fade1" id="tips" tabindex="-1" style="margin-top: 5%">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">提示</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <span>${msg}</span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+
+        // 添加新的提示内容到页面中
+        document.getElementById("page").innerHTML += content;
+
+        // 显示模态框
+        let model = new bootstrap.Modal(document.getElementById("tips"));
+        model.show();
+    }
+    function scrollRight() {
+        var container = document.getElementById("card");
+        var buttons = Array.from(container.querySelectorAll('.btn')); // 获取所有按钮
+        var containerWidth = container.clientWidth; // 获取容器宽度
+        var containerScrollLeft = container.scrollLeft; // 当前滚动位置
+        var nextScrollPosition = containerScrollLeft + containerWidth; // 计算下一个滚动位置
+
+        // 找到下一个按钮
+        for (var i = 0; i < buttons.length; i++) {
+            var button = buttons[i];
+            var buttonRect = button.getBoundingClientRect();
+            var containerRect = container.getBoundingClientRect();
+
+            // 计算按钮左边缘相对于容器的位置
+            var buttonLeft = buttonRect.left - containerRect.left + containerScrollLeft;
+
+            // 检查按钮是否在视口右侧
+            if (buttonLeft >= nextScrollPosition) {
+                // 滚动容器到按钮位置
+                container.scrollBy({ left: buttonLeft - containerScrollLeft, behavior: 'smooth' });
+                break;
+            }
+        }
+    }
+    function toleft() {
+        var container = document.getElementById("card");
+        var buttons = Array.from(container.querySelectorAll('.btn')); // 获取所有按钮
+        var containerWidth = container.clientWidth; // 获取容器宽度
+        var containerScrollLeft = container.scrollLeft; // 当前滚动位置
+
+        // 找到上一个按钮
+        for (var i = buttons.length - 1; i >= 0; i--) {
+            var button = buttons[i];
+            var buttonRect = button.getBoundingClientRect();
+            var containerRect = container.getBoundingClientRect();
+
+            // 计算按钮右边缘相对于容器的位置
+            var buttonRight = buttonRect.right - containerRect.left + containerScrollLeft;
+
+            // 检查按钮是否在视口左侧
+            if (buttonRight <= containerScrollLeft) {
+                // 滚动容器到按钮位置
+                container.scrollTo({ left: Math.max(buttonRight - containerWidth, 0), behavior: 'smooth' });
+                break;
+            }
+        }
+    }
+    function changestatus(status) {
+        text = ""
+        color = ""
+        if (status === "0") {
+            text = "从未运行过"
+            color = "gray"
+        } else if (status === "1") {
+            text = "运行中"
+            color = "green"
+        } else if (status === "2") {
+            text = "未运行"
+            color = "gray"
+        } else if (status === "3") {
+            text = "服务端错误"
+            color = "red"
+        } else if (status === "4") {
+            text = "获取失败"
+            color = "red"
+        }
+        document.getElementById("status").textContent = text
+        document.getElementById("status").style.color = color
+    }
+
+    function refresh_bot_statu() {
+        if (window.parent && typeof window.parent.getbotlist === 'function') {
+            window.parent.getbotlist();
+        } else {
+            console.error('父页面的函数未定义或不可用');
+        }
+    }
+</script>
+<script>
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
+    const name = params.get("name")
+    document.getElementById("name").textContent = name
+    const belong = params.get("belong")
+    let server = params.get("server")
+    const term = new Terminal();
+    term.open(document.getElementById('terminal'));
+    wsaddr = 'ws://' + url.origin.split("://")[1] + "/ws/" + name + "/" + belong + "?server=" + server
+    const socket = new WebSocket(wsaddr);
+
+    // 定义要忽略的按键序列
+    const ignoredKeys = [
+        '\x1b[A', // Up arrow
+        '\x1b[B', // Down arrow
+        '\x1b[C', // Right arrow
+        '\x1b[D', // Left arrow
+        '\x1bOP', // F1
+        '\x1bOQ', // F2
+        '\x1bOR', // F3
+        '\x1bOS', // F4
+        '\x1b[15~', // F5
+        '\x1b[17~', // F6
+        '\x1b[18~', // F7
+        '\x1b[19~', // F8
+        '\x1b[20~', // F9
+        '\x1b[21~', // F10
+        '\x1b[23~', // F11
+        '\x1b[24~', // F12
+        '\x1b'     // ESC
+    ];
+
+    let inputBuffer = '';
+    let sentLines = 0;
+
+    term.onData(data => {
+        // 处理单个字符
+        for (let i = 0; i < data.length; i++) {
+            const char = data.charAt(i);
+
+            // 如果按键属于被忽略的按键，直接跳过
+            if (ignoredKeys.includes(char)) {
+                return;
+            }
+
+            if (char === '\r') { // Enter key
+                socket.send(inputBuffer);
+                term.write('\r\n');
+                inputBuffer = '';
+
+                // 删除最后发送的消息
+                term.write('\x1b[' + sentLines + 'A'); // 上移光标
+                term.write('\x1b[2K'.repeat(sentLines)); // 清除行(s)
+                sentLines = 0;
+            } else if (char === '\u007F') { // Backspace key
+                if (inputBuffer.length > 0) {
+                    inputBuffer = inputBuffer.slice(0, -1);
+                    term.write('\b \b');
+                }
+            } else {
+                inputBuffer += char;
+                term.write(char); // 临时显示输入字符
+                sentLines = 1; // 更新受影响的行数
+            }
+        }
+    });
+
+    socket.onopen = () => {
+        socket.send("[receive is open]")
+    };
+
+    socket.onmessage = event => {
+        // 先保存用户当前输入的内容
+        const currentInput = inputBuffer;
+
+        // 清空当前行
+        term.write('\x1b[2K'); // 清除行
+        term.write('\r'); // 回到行首
+
+        // 显示新消息
+        message = ""
+        try {
+            message = event.data.split("[ws-send-program]")[1] + '\r\n'
+        }catch {
+            message = event.data + '\r\n'
+        }
+        term.write(message);
+
+        // 恢复用户输入的内容
+        term.write(currentInput);
+        term.scrollToBottom();// 重新发送用户输入
+    };
+
+    socket.onclose = () => {
+        term.write('连接中断.\r\n');
+    };
+
+    window.addEventListener('load', () => {
+        // 选择你要隐藏的容器
+        const hiddenDiv = document.querySelector('div[style*="top: -50000px;"]'); // 选择具有特定内联样式的 div
+        if (hiddenDiv) {
+            hiddenDiv.style.width = "100%";
+        }
+    });
+    data = {
+        name: name,
+        server: server,
+        belong: belong
+    }
+    fetch("/getbotstatus", {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    }).then(response => response.json())
+        .then(data => {
+            changestatus(data.status)
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        })
+
+    function startFadeOut() {
+        document.body.classList.add('fade-out');
+    }
+
+    function stop() {
+        disabledbtn()
+        data2 = {
+            name: name,
+            server: server,
+            belong: belong
+        }
+        fetch("/stopbot", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data2)
+        }).then(response => response.json())
+            .then(data3 => {
+                console.log(data3)
+                show_tip(data3.message)
+                setTimeout(() => {
+                    startFadeOut(); // 开始淡出动画
+                    setTimeout(() => {
+                        refresh_bot_statu()
+                        window.location.reload()
+                    }, 300); // 延迟0.3秒再刷新页面
+                }, 3000)
+            })
+            .catch(error => {
+                show_tip("请求出错: " + error)
+                setTimeout(() => {
+                    startFadeOut(); // 开始淡出动画
+                    setTimeout(() => {
+                        refresh_bot_statu()
+                        window.location.reload()
+                    }, 300); // 延迟0.3秒再刷新页面
+                }, 3000)
+            })
+    }
+
+    function open_bot() {
+        disabledbtn()
+        data4 = {
+            name: name,
+            server: server,
+            belong: belong
+        }
+        fetch("/startbot", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data4)
+        }).then(response => response.json())
+            .then(data5 => {
+                show_tip(data5.message)
+                if (data5.code === 200) {
+                    setTimeout(() => {
+                        startFadeOut(); // 开始淡出动画
+                        setTimeout(() => {
+                            refresh_bot_statu()
+                            window.location.reload()
+                        }, 300); // 延迟0.3秒再刷新页面
+                    }, 5000)
+                } else {
+                    ablebtn()
+                }
+            })
+            .catch(error => {
+                show_tip("请求出错: " + error)
+                setTimeout(() => {
+                    startFadeOut(); // 开始淡出动画
+                    setTimeout(() => {
+                        refresh_bot_statu()
+                        window.location.reload()
+                    }, 300); // 延迟0.3秒再刷新页面
+                }, 5000)
+            })
+    }
+
+    function disabledbtn() {
+        document.getElementById("close").disabled = true;
+        document.getElementById("open").disabled = true;
+    }
+
+    function ablebtn() {
+        document.getElementById("close").disabled = false;
+        document.getElementById("open").disabled = false;
+    }
+
+    function change_input_width() {
+        input_item = document.getElementById("input")
+        sc_item = document.getElementById("sc")
+        width = document.querySelector(".xterm-viewport").offsetWidth;
+        input_item.style.width = width + "px";
+        sc_item.style.width = width * 1.01 + "px";
+    }
+    function initResizeObserver() {
+        var viewport = document.querySelector(".xterm-viewport");
+
+        if (viewport) {
+            var observer = new ResizeObserver(() => {
+                change_input_width();
+            });
+
+            observer.observe(viewport);
+        }
+    }
+
+    // 在页面加载完成后初始化
+    document.addEventListener("DOMContentLoaded", function () {
+        change_input_width(); // 初次设置宽度
+        initResizeObserver(); // 初始化 ResizeObserver
+    });
+    window.addEventListener("resize", change_input_width)
+    document.getElementById("message").addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            sendmessage()
+        }
+    })
+    function sendmessage() {
+        message = document.getElementById("message").value;
+        socket.send(message)
+        document.getElementById("message").value = "";
+    }
+    function sendmsg(message) {
+        socket.send(message)
+    }
+    function insertcommands(result) {
+        item1 = document.getElementById("card")
+        for (item of result) {
+            content = `
+            <button class="btn btn-dark btn-sm" onclick="sendmsg('${item["Command"]}')">${item["Call"]}</button>&nbsp
+            `
+            item1.innerHTML += content
+        }
+    }
+    function getcommands() {
+        data6 = {
+            name: name,
+            belong: belong
+        }
+        fetch("/getcommands", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data6)
+        }).then(response => response.json())
+            .then(data7 => {
+                insertcommands(data7)
+            })
+            .catch(error => {
+                console.log('Error:', error);
+            })
+    }
+    getcommands()
+</script>
+</body>
+</html>
