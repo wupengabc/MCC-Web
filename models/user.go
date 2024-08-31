@@ -42,6 +42,7 @@ func InsertUser(username, password string) int {
 	var user Users
 	user.Username = username
 	user.Password = password
+	user.Permission = 1
 	status, err2 := Db.Where("username = ?", username).Get(&user)
 	if err2 != nil {
 		return 0

@@ -71,3 +71,20 @@ func GetCountByBelong(belong string) int64 {
 	}
 	return count
 }
+
+func GetBotByNameBelongServer(name, belong, server string) Bots {
+	var bot Bots
+	_, err := Db.Where("name = ? AND belong = ? AND server = ?", name, belong, server).Get(&bot)
+	if err != nil {
+		return Bots{}
+	}
+	return bot
+}
+
+func DelBotByNameBelongServer(name, belong, server string) {
+	_, err := Db.Where("name = ? AND belong = ? AND server = ?", name, belong, server).Delete(&Bots{})
+	if err != nil {
+		return
+	}
+	return
+}

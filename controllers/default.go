@@ -613,6 +613,7 @@ func (c *MainController) AddBot() {
 			id, _ := strconv.Atoi(data.Server)
 			server := models.GetServerById(int64(id))
 			key := models.GetServerKey(server)
+			fmt.Println(server)
 			url := "http://" + server + "/" + key + "/addbot"
 			result := models.PostData(url, string(data3tojson))
 			if result == "0" {
@@ -624,6 +625,7 @@ func (c *MainController) AddBot() {
 				return
 			} else if result == "1" {
 				c.Data["json"] = map[string]interface{}{"code": 200, "msg": "添加成功, 请等待数据同步, 约5s"}
+				models.InsertBot(data.Name, data.Version, username.(string), "0", data.Forge, data.Server, data.Connection)
 				err := c.ServeJSON()
 				if err != nil {
 					return
@@ -660,6 +662,190 @@ func (c *MainController) AddBot() {
 			return
 		}
 		return
+	}
+}
+
+func (c *MainController) GetBotConfig() {
+	username := c.GetSession("username")
+	permission, err3 := strconv.Atoi(fmt.Sprintf("%v", c.GetSession("permission")))
+	if err3 != nil {
+		c.Data["json"] = map[string]string{"error": "Invalid JSON"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+	}
+	body := c.Ctx.Input.RequestBody
+	var data SwitchBots
+	if err := json.Unmarshal(body, &data); err != nil {
+		c.Ctx.Output.SetStatus(http.StatusBadRequest)
+		c.Data["json"] = map[string]string{"error": "Invalid JSON"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+		return
+	}
+	if username == data.Belong || permission >= 7 {
+		config := models.GetBotByNameBelongServer(data.Name, data.Belong, data.Server)
+		if config != (models.Bots{}) {
+			c.Data["json"] = map[string]interface{}{"code": 200, "data": config}
+			err := c.ServeJSON()
+			if err != nil {
+				return
+			}
+			return
+		} else {
+			c.Data["json"] = map[string]interface{}{"code": 401, "data": "配置获取失败, 配置未同步或者网络错误"}
+			err := c.ServeJSON()
+			if err != nil {
+				return
+			}
+			return
+		}
+	} else {
+		c.Data["json"] = map[string]interface{}{"code": 401, "data": "权限不足"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+	}
+}
+
+type UpdateBot struct {
+	Oldname       string `json:"oldname"`
+	Oldbelong     string `json:"oldbelong"`
+	Oldserver     string `json:"oldserver"`
+	Newname       string `json:"newname"`
+	Newbelong     string `json:"newbelong"`
+	Newversion    string `json:"newversion"`
+	Newforge      string `json:"newforge"`
+	Newconnection string `json:"newconnection"`
+}
+
+func (c *MainController) UpdateBot() {
+	username := c.GetSession("username")
+	permission, err3 := strconv.Atoi(fmt.Sprintf("%v", c.GetSession("permission")))
+	if err3 != nil {
+		c.Data["json"] = map[string]string{"error": "Invalid JSON"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+	}
+	body := c.Ctx.Input.RequestBody
+	var data UpdateBot
+	if err := json.Unmarshal(body, &data); err != nil {
+		c.Ctx.Output.SetStatus(http.StatusBadRequest)
+		c.Data["json"] = map[string]string{"error": "Invalid JSON"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+		return
+	}
+	if username == data.Oldbelong || permission >= 7 {
+		if username != data.Newbelong {
+			c.Data["json"] = map[string]interface{}{"code": 401, "msg": "你没有权限修改机器人所有者"}
+			err := c.ServeJSON()
+			if err != nil {
+				return
+			}
+			return
+		}
+		newconfig := map[string]interface{}{"oldname": data.Oldname, "oldbelong": username, "newname": data.Newname, "newbelong": data.Newbelong, "newversion": data.Newversion, "newforge": data.Newforge, "newconnection": data.Newconnection}
+		configtostr, _ := json.Marshal(newconfig)
+		id, _ := strconv.Atoi(data.Oldserver)
+		server := models.GetServerById(int64(id))
+		key := models.GetServerKey(server)
+		url := "http://" + server + "/" + key + "/updatebot"
+		models.DelBotByNameBelongServer(data.Oldname, username.(string), data.Oldserver)
+		result := models.PostData(url, string(configtostr))
+		if result == "0" {
+			c.Data["json"] = map[string]interface{}{"code": 401, "msg": "修改失败, 该机器人不存在"}
+			err := c.ServeJSON()
+			if err != nil {
+				return
+			}
+		} else if result == "1" {
+			c.Data["json"] = map[string]interface{}{"code": 200, "msg": "修改成功, 请等待数据同步后手动重启Bot, 同步时间约5s"}
+			err := c.ServeJSON()
+			if err != nil {
+				return
+			}
+		} else if result == "2" {
+			c.Data["json"] = map[string]interface{}{"code": 401, "msg": "修改失败, 服务端错误, 请重试或者联系管理员处理"}
+			err := c.ServeJSON()
+			if err != nil {
+				return
+			}
+		} else if result == "3" {
+			c.Data["json"] = map[string]interface{}{"code": 401, "msg": "同一服务器下, 您只能存在一个相同名称的Bot, 请尝试更换其他名字或者删除冲突的Bot, 或使用其他服务器"}
+			err := c.ServeJSON()
+			if err != nil {
+				return
+			}
+		} else {
+			c.Data["json"] = map[string]interface{}{"code": 401, "msg": "获取修改状态失败, 请5s后刷新页面查看是否修改成功或者联系管理员处理"}
+			err := c.ServeJSON()
+			if err != nil {
+				return
+			}
+		}
+	} else {
+		c.Data["json"] = map[string]interface{}{"code": 401, "msg": "权限不足"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+	}
+}
+
+func (c *MainController) DeleteBot() {
+	username := c.GetSession("username")
+	permission, err3 := strconv.Atoi(fmt.Sprintf("%v", c.GetSession("permission")))
+	if err3 != nil {
+		c.Data["json"] = map[string]string{"error": "Invalid JSON"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+	}
+	body := c.Ctx.Input.RequestBody
+	var data SwitchBots
+	if err := json.Unmarshal(body, &data); err != nil {
+		c.Ctx.Output.SetStatus(http.StatusBadRequest)
+		c.Data["json"] = map[string]string{"error": "Invalid JSON"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+		return
+	}
+	if username == data.Belong || permission >= 7 {
+		deletedata := map[string]interface{}{"name": data.Name, "belong": data.Belong}
+		deletedatatostr, _ := json.Marshal(deletedata)
+		id, _ := strconv.Atoi(data.Server)
+		server := models.GetServerById(int64(id))
+		key := models.GetServerKey(server)
+		url := "http://" + server + "/" + key + "/removebot"
+		models.DelBotByNameBelongServer(data.Name, data.Belong, data.Server)
+		result := models.PostData(url, string(deletedatatostr))
+		if result == "1" {
+			c.Data["json"] = map[string]interface{}{"code": 200, "msg": "删除成功, 请等待数据同步, 约5s"}
+			err := c.ServeJSON()
+			models.DelBotByNameBelongServer(data.Name, data.Belong, data.Server)
+			if err != nil {
+				return
+			}
+		} else {
+			c.Data["json"] = map[string]interface{}{"code": 401, "msg": "获取删除结果失败, 请5s后刷新页面查看是否删除"}
+			err := c.ServeJSON()
+			models.DelBotByNameBelongServer(data.Name, data.Belong, data.Server)
+			if err != nil {
+				return
+			}
+		}
 	}
 }
 
