@@ -3,7 +3,7 @@ package models
 import "fmt"
 
 type Bots struct {
-	ID         int64  `xorm:"'id' pk autoincr"`
+	I          int64  `xorm:"'id' pk autoincr"`
 	Name       string `xorm:"'name' TEXT"`
 	Version    string `xorm:"'version' TEXT default 'auto'"`
 	Belong     string `xorm:"'belong' TEXT"`
@@ -49,7 +49,7 @@ func GetBotByUsername(username string) []Bots {
 type Commands struct {
 	Id      int64  `xorm:"'id' INT(11) PK AUTOINCR"`
 	Name    string `xorm:"'name' TEXT"`
-	Belong  string `xorm:"'name' TEXT"`
+	Belong  string `xorm:"'belong' TEXT"`
 	Command string `xorm:"'command' TEXT"`
 	Call    string `xorm:"'call' TEXT"`
 }
@@ -61,6 +61,48 @@ func GetCommands(name, belong string) []Commands {
 		return nil
 	}
 	return commands
+}
+
+func AddCommand(name, belong, command, call string) string {
+	data := Commands{
+		Name:    name,
+		Belong:  belong,
+		Command: command,
+		Call:    call,
+	}
+	has, err := Db.Where("name = ? AND belong = ? AND command = ? AND call = ?", name, belong, command, call).Get(&Commands{})
+	if err != nil {
+		return "2"
+	}
+	if has {
+		return "1"
+	}
+	_, err = Db.Insert(data)
+	return "0"
+}
+
+func DeleteCommand(name, belong, command, call string) string {
+	_, err := Db.Where("name = ? AND belong = ? AND command = ? AND call = ?", name, belong, command, call).Delete(&Commands{})
+	if err != nil {
+		return "2"
+	}
+	return "0"
+}
+
+func ChangeCommand(name, belong, oldcommand, oldcall, newcommand, newcall string) string {
+	data := Commands{
+		Command: newcommand,
+		Call:    newcall,
+	}
+	has, err := Db.Where("name = ? AND belong = ? AND command = ? AND call = ?", name, belong, oldcommand, oldcall).Get(&Commands{})
+	if err != nil {
+		return "2"
+	}
+	if has {
+		_, err = Db.Where("name = ? AND belong = ? AND command = ? AND call = ?", name, belong, oldcommand, oldcall).Update(data)
+		return "0"
+	}
+	return "1"
 }
 
 func GetCountByBelong(belong string) int64 {

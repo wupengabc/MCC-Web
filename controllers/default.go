@@ -36,6 +36,14 @@ func (c *MainController) LoginGet() {
 func (c *MainController) LoginPost() {
 	username := c.GetString("username")
 	password := c.GetString("password")
+	if username == "" || password == "" {
+		c.Data["json"] = map[string]interface{}{"code": 401, "msg": "用户名或密码不能为空"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+		return
+	}
 	result, err, permission := models.CheckUser(username, password)
 	if err != nil {
 		c.Data["json"] = map[string]interface{}{"code": 401, "msg": "数据文件错误，请检查后台报错"}
@@ -107,6 +115,15 @@ func (c *MainController) RegPost() {
 	code := c.GetString("code")
 	CodeStatus := models.CheckCode(code)
 	if CodeStatus == 1 {
+		if username == "" || password == "" {
+			c.Data["json"] = map[string]interface{}{"code": 401, "msg": "用户名或密码不能为空"}
+			models.InsertCode(code)
+			err := c.ServeJSON()
+			if err != nil {
+				return
+			}
+			return
+		}
 		result := models.InsertUser(username, password)
 		if result == 1 {
 			c.Data["json"] = map[string]interface{}{"code": 200, "msg": "注册成功,即将为你跳转登录界面"}
@@ -484,14 +501,124 @@ func (c *MainController) GetCommands() {
 	}
 	if data.Belong == username || permission >= 7 {
 		result := models.GetCommands(data.Name, data.Belong)
-		c.Data["json"] = result
+		c.Data["json"] = map[string]interface{}{"code": 200, "data": result}
 		err := c.ServeJSON()
 		if err != nil {
 			return
 		}
 		return
 	} else {
-		c.Data["json"] = map[string]interface{}{"code": 401, "message": "权限不足"}
+		c.Data["json"] = map[string]interface{}{"code": 401, "data": "权限不足"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+		return
+	}
+}
+
+type AddDeleteCommand struct {
+	Name    string `json:"name"`
+	Belong  string `json:"belong"`
+	Command string `json:"command"`
+	Call    string `json:"call"`
+	Method  string `json:"method"`
+}
+
+func (c *MainController) AddDeleteCommand() {
+	username := c.GetSession("username").(string)
+	permission, err3 := strconv.Atoi(fmt.Sprintf("%v", c.GetSession("permission")))
+	if err3 != nil {
+		c.Data["json"] = map[string]string{"error": "Invalid JSON"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+	}
+	body := c.Ctx.Input.RequestBody
+	var data AddDeleteCommand
+	if err := json.Unmarshal(body, &data); err != nil {
+		c.Ctx.Output.SetStatus(http.StatusBadRequest)
+		c.Data["json"] = map[string]string{"error": "Invalid JSON"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+		return
+	}
+	if username == data.Belong || permission >= 7 {
+		if data.Method == "add" {
+			result := models.AddCommand(data.Name, data.Belong, data.Command, data.Call)
+			c.Data["json"] = map[string]interface{}{"code": 200, "data": result}
+			err := c.ServeJSON()
+			if err != nil {
+				return
+			}
+			return
+		} else if data.Method == "delete" {
+			result := models.DeleteCommand(data.Name, data.Belong, data.Command, data.Call)
+			c.Data["json"] = map[string]interface{}{"code": 200, "data": result}
+			err := c.ServeJSON()
+			if err != nil {
+				return
+			}
+			return
+		} else {
+			c.Data["json"] = map[string]interface{}{"code": 401, "data": "错误的Method"}
+			err := c.ServeJSON()
+			if err != nil {
+				return
+			}
+		}
+	} else {
+		c.Data["json"] = map[string]interface{}{"code": 401, "data": "权限不足"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+		return
+	}
+}
+
+type ChangeCommand struct {
+	Name       string `json:"name"`
+	Belong     string `json:"belong"`
+	Oldcommand string `json:"oldcommand"`
+	Oldcall    string `json:"oldcall"`
+	Newcommand string `json:"newcommand"`
+	Newcall    string `json:"newcall"`
+}
+
+func (c *MainController) ChangeCommand() {
+	username := c.GetSession("username").(string)
+	permission, err3 := strconv.Atoi(fmt.Sprintf("%v", c.GetSession("permission")))
+	if err3 != nil {
+		c.Data["json"] = map[string]string{"error": "Invalid JSON"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+	}
+	body := c.Ctx.Input.RequestBody
+	var data ChangeCommand
+	if err := json.Unmarshal(body, &data); err != nil {
+		c.Ctx.Output.SetStatus(http.StatusBadRequest)
+		c.Data["json"] = map[string]string{"error": "Invalid JSON"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+		return
+	}
+	if username == data.Belong || permission >= 7 {
+		result := models.ChangeCommand(data.Name, data.Belong, data.Oldcommand, data.Oldcall, data.Newcommand, data.Newcall)
+		c.Data["json"] = map[string]interface{}{"code": 200, "data": result}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+	} else {
+		c.Data["json"] = map[string]interface{}{"code": 401, "data": "权限不足"}
 		err := c.ServeJSON()
 		if err != nil {
 			return
@@ -608,6 +735,15 @@ func (c *MainController) AddBot() {
 		has := models.GetCountByBelong(username.(string))
 		num := int64(permission)
 		if has < num {
+			result4 := models.GetBotByNameBelongServer(data.Name, username.(string), data.Server)
+			if result4 != (models.Bots{}) {
+				c.Data["json"] = map[string]interface{}{"code": 401, "msg": "添加失败, 当前用户下已存在同名机器人"}
+				err := c.ServeJSON()
+				if err != nil {
+					return
+				}
+				return
+			}
 			data3 := map[string]interface{}{"name": data.Name, "version": data.Version, "forge": data.Forge, "connection": data.Connection, "server": data.Server, "belong": username.(string)}
 			data3tojson, _ := json.Marshal(data3)
 			id, _ := strconv.Atoi(data.Server)
@@ -845,6 +981,30 @@ func (c *MainController) DeleteBot() {
 			if err != nil {
 				return
 			}
+		}
+	} else {
+		c.Data["json"] = map[string]interface{}{"code": 401, "msg": "权限不足"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+	}
+}
+
+func (c *MainController) GetNotice() {
+	username := c.GetSession("username")
+	if username != nil {
+		notice := models.GetNotices()
+		c.Data["json"] = map[string]interface{}{"code": 200, "data": notice}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+	} else {
+		c.Data["json"] = map[string]interface{}{"code": 401, "msg": "权限不足"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
 		}
 	}
 }

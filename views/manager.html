@@ -82,10 +82,116 @@
         .sc {
             margin: 0 auto;
         }
+        .custom-backdrop {
+            z-index: 1600;
+        }
     </style>
 </head>
 <body style="top: -1.5%">
 <div class="page" id="page">
+    <div class="modal fade1" id="changecommand" tabindex="-1">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">快捷指令</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="max-height: 75vh; overflow-y: scroll">
+                    <div class="alert alert-success alert-dismissible d-none" role="alert" id="changecommandsuccess">
+                        <div class="d-flex">
+                            <div>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                    <path d="M5 12l5 5l10 -10"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="alert-title">更改成功</h4>
+                                <div class="text-secondary">你成功更改了一条快捷指令</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-danger alert-dismissible d-none" role="alert" id="changecommandhasnot">
+                        <div class="d-flex">
+                            <div>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                    <circle cx="12" cy="12" r="9"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="alert-title">修改失败</h4>
+                                <div class="text-secondary">你尝试修改的快捷指令不存在</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-danger alert-dismissible d-none" role="alert" id="addcommandhas">
+                        <div class="d-flex">
+                            <div>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                    <circle cx="12" cy="12" r="9"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="alert-title">添加失败</h4>
+                                <div class="text-secondary">该Bot已存在相同别称和命令的快捷指令, 请重新输入</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-danger alert-dismissible d-none" role="alert" id="changecommanderror">
+                        <div class="d-flex">
+                            <div>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                    <circle cx="12" cy="12" r="9"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="alert-title">修改失败</h4>
+                                <div class="text-secondary">未知错误, 请刷新重试或尝试联系管理员处理</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="mb-2">
+                            <label class="form-label">添加指令:</label>
+                            <div class="row">
+                                <div class="col-4">
+                                    <input type="text" class="form-control" placeholder="命令别称" id="addcall">
+                                </div>
+                                <div class="col-5">
+                                    <input type="text" class="form-control" placeholder="命令" id="addcommand">
+                                </div>
+                                <div class="col-md-auto">
+                                    <button class="btn" onclick="clearaddcommand()">清空</button>
+                                </div>
+                                <div class="col">
+                                    <button class="btn btn-green" onclick="addcommand()" disabled id="addButton">添加</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="mb-2">
+                            <label class="form-label">指令列表:</label>
+                        </div>
+                        <div id="commandlist">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn align-items-end" data-bs-dismiss="modal" aria-label="Close">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="modal fade1" id="changebot" tabindex="-1">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -169,6 +275,23 @@
                             </a></div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="change_command_warning" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1620">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">确定修改?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <span>你确定要修改这条快捷指令?</span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">取消</button>
+                    <button type="button" class="btn btn-primary" id="surechangecommand" data-bs-dismiss="modal" aria-label="Close">确定</button>
                 </div>
             </div>
         </div>
@@ -280,19 +403,37 @@
             </div>
             <br>
             <div class="sc row" id="sc">
-                <div class="commands col-11" id="card">
+                <div class="commands col-11">
                     <button class="btn btn-sm">快捷指令:</button>&nbsp
+                    <div id="card"></div>
                 </div>
                 <span class="col-1">
                     <button class="btn btn-sm" onclick="toleft()"><</button>
                     <button class="btn btn-sm" onclick="scrollRight()">></button>
-                    <button class="btn btn-primary btn-sm">±</button>
+                    <button class="btn btn-primary btn-sm" onclick="showcommand()">±</button>
                 </span>
             </div>
         </div>
     </div>
 </div>
 <script>
+    // 获取模态框元素和相关的 backdrop
+    var myModal = document.getElementById('change_command_warning');
+    myModal.addEventListener('show.bs.modal', function () {
+        var backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.classList.add('custom-backdrop');
+        }
+    });
+
+    // 监听模态框隐藏事件
+    myModal.addEventListener('hidden.bs.modal', function () {
+        var backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.classList.remove('custom-backdrop');
+        }
+    });
+
     // 验证表单字段
     function validateForm() {
         const connectionInput = document.getElementById("connection").value.trim();
@@ -342,7 +483,30 @@
     document.getElementById("forge").addEventListener("input", function() {
         validateForm(); // 检查表单状态
     });
+    document.addEventListener('DOMContentLoaded', function () {
+        const callInput = document.getElementById('addcall');
+        const commandInput = document.getElementById('addcommand');
+        const addButton = document.getElementById('addButton');
 
+        function checkInputs() {
+            const callValue = callInput.value.trim();
+            const commandValue = commandInput.value.trim();
+
+            // 只有当两个输入框都不为空时，启用按钮
+            if (callValue !== "" && commandValue !== "") {
+                addButton.disabled = false;
+            } else {
+                addButton.disabled = true;
+            }
+        }
+
+        // 为输入框添加监听器
+        callInput.addEventListener('input', checkInputs);
+        commandInput.addEventListener('input', checkInputs);
+
+        // 初始化时检查一次
+        checkInputs();
+    });
     // 初始验证
     validateForm();
 
@@ -367,7 +531,7 @@
 
         // 创建新的提示内容
         let content = `
-    <div class="modal fade1" id="tips" tabindex="-1" style="margin-top: 5%">
+    <div class="modal fade1" id="tips" tabindex="-1" style="margin-top: 5%;">
         <div class="modal-dialog modal-sm" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -606,6 +770,7 @@
 
     function stop() {
         disabledbtn()
+        document.getElementById("config").disabled = true
         data2 = {
             name: name,
             server: server,
@@ -643,6 +808,7 @@
 
     function open_bot() {
         disabledbtn()
+        document.getElementById("config").disabled = true
         data4 = {
             name: name,
             server: server,
@@ -731,9 +897,12 @@
     }
     function insertcommands(result) {
         item1 = document.getElementById("card")
+        if (result === null) {
+            return
+        }
         for (item of result) {
             content = `
-            <button class="btn btn-dark btn-sm" onclick="sendmsg('${item["Command"]}')">${item["Call"]}</button>&nbsp
+            <button class="btn btn-dark btn-sm" onclick="sendmsg('${item["Command"]}')">${item["Call"]}</button>
             `
             item1.innerHTML += content
         }
@@ -751,7 +920,8 @@
             body: JSON.stringify(data6)
         }).then(response => response.json())
             .then(data7 => {
-                insertcommands(data7)
+                document.getElementById("card").innerHTML = ""
+                insertcommands(data7.data)
             })
             .catch(error => {
                 console.log('Error:', error);
@@ -829,9 +999,7 @@
                 show_tip(error)
             })
     }
-    function showdelete() {
 
-    }
     function deletebot() {
         data9 = {
             name: name,
@@ -857,6 +1025,240 @@
             }).catch(error => {
                 show_tip(error)
         })
+    }
+    function addcommandlist(commandid, command, call) {
+        commandidstr = "commandid" + commandid;
+        callidstr = "callid" + commandid
+        changeid = "changeid" + commandid
+        removeid = "removeid" + commandid
+        const escapedCall = call.replace(/"/g, '&quot;'); // 转义双引号
+        const escapedCommand = command.replace(/"/g, '&quot;'); // 转义双引号
+
+        const content = `
+        <div class="mb-2">
+            <div class="row">
+                <div class="col-4">
+                    <input type="text" class="form-control" value="${escapedCall}" placeholder="${escapedCall}" disabled id="${callidstr}">
+                </div>
+                <div class="col-5">
+                    <input type="text" class="form-control" value="${escapedCommand}" placeholder="${escapedCommand}" disabled id="${commandidstr}">
+                </div>
+                <div class="col-md-auto">
+                    <button class="btn btn-primary" id="${changeid}" onclick="switchchangecommand1(${commandid})">修改</button>
+                </div>
+                <div class="col">
+                    <button class="btn btn-danger" id="${removeid}" onclick="deletecommand(${commandid})">删除</button>
+                </div>
+            </div>
+        </div>
+    `;
+        document.getElementById("commandlist").innerHTML += content;
+    }
+
+    function getcommandlist() {
+        data6 = {
+            name: name,
+            belong: belong
+        }
+        fetch("/getcommands", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data6)
+        }).then(response => response.json())
+            .then(data7 => {
+                document.getElementById("commandlist").innerHTML = ""
+                if (data7.data === null) {
+                    console.log(1)
+                } else {
+                    for (let i = 0; i < data7.data.length; i++) {
+                        console.log(data7.data[i]["Call"].toString())
+                        addcommandlist(i, data7.data[i]["Command"], data7.data[i]["Call"].toString())
+                    }
+                }
+            })
+            .catch(error => {
+                show_tip(error);
+            })
+    }
+    function switchchangecommand2(commandid) {
+        commandidstr = "commandid" + commandid;
+        callidstr = "callid" + commandid
+        changeid = "changeid" + commandid
+        removeid = "removeid" + commandid
+        callitem = document.getElementById(callidstr)
+        commanditem = document.getElementById(commandidstr)
+        callitem.disabled = true
+        commanditem.disabled = true
+        callitem.value = callitem.placeholder
+        commanditem.value = commanditem.placeholder
+        btn1 = document.getElementById(changeid)
+        btn1.className = "btn btn-primary"
+        btn1.textContent = "修改"
+        btn1.onclick = () => switchchangecommand1(commandid);
+        btn2 = document.getElementById(removeid)
+        btn2.className = "btn btn-danger"
+        btn2.textContent = "删除"
+        btn2.onclick = () => deletecommand(commandid)
+    }
+    function switchchangecommand1(commandid) {
+        commandidstr = "commandid" + commandid;
+        callidstr = "callid" + commandid
+        changeid = "changeid" + commandid
+        removeid = "removeid" + commandid
+        document.getElementById("changecommandsuccess").className = "alert alert-success alert-dismissible d-none"
+        document.getElementById("changecommandhasnot").className = "alert alert-danger alert-dismissible d-none"
+        document.getElementById("changecommanderror").className = "alert alert-danger alert-dismissible d-none"
+        document.getElementById(callidstr).disabled = false;
+        document.getElementById(commandidstr).disabled = false;
+        btn1 = document.getElementById(changeid)
+        btn1.className = "btn"
+        btn1.textContent = "取消"
+        btn1.onclick = () => switchchangecommand2(commandid);
+        btn2 = document.getElementById(removeid)
+        btn2.className = "btn btn-primary"
+        btn2.textContent = "确定"
+        btn2.onclick = () => showchangewarning(commandid)
+    }
+    function changecommand(commandid) {
+        commandidstr = "commandid" + commandid;
+        callidstr = "callid" + commandid
+        oldcall = document.getElementById(callidstr).placeholder
+        newcall = document.getElementById(callidstr).value
+        oldcommand = document.getElementById(commandidstr).placeholder
+        newcommand = document.getElementById(commandidstr).value
+        document.getElementById("changecommandsuccess").className = "alert alert-success alert-dismissible d-none"
+        document.getElementById("changecommandhasnot").className = "alert alert-danger alert-dismissible d-none"
+        document.getElementById("changecommanderror").className = "alert alert-danger alert-dismissible d-none"
+        data3 = {
+            name: name,
+            belong: belong,
+            oldcommand: oldcommand,
+            oldcall: oldcall,
+            newcommand: newcommand,
+            newcall: newcall
+        }
+        fetch("/changecommand", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data3)
+        }).then(res => res.json()).then(data4 => {
+            if (data4.data === "0") {
+                document.getElementById("changecommandsuccess").className = "alert alert-success alert-dismissible"
+                getcommandlist()
+                getcommands()
+            } else if (data4.data === "1") {
+                document.getElementById("changecommandhasnot").className = "alert alert-danger alert-dismissible"
+                getcommandlist()
+                getcommands()
+            } else {
+                document.getElementById("changecommanderror").className = "alert alert-danger alert-dismissible"
+                getcommandlist()
+                getcommands()
+            }
+        }).catch(error => {
+            console.log(error)
+        })
+    }
+    function deletecommand(commandid) {
+        document.getElementById("changecommandsuccess").className = "alert alert-success alert-dismissible d-none"
+        document.getElementById("changecommanderror").className = "alert alert-danger alert-dismissible d-none"
+        commandidstr = "commandid" + commandid;
+        callidstr = "callid" + commandid
+        call = document.getElementById(callidstr).placeholder
+        command = document.getElementById(commandidstr).placeholder
+        data5 = {
+            method: "delete",
+            name: name,
+            belong: belong,
+            command: command,
+            call: call
+        }
+        fetch("/adddeletecommand", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data5)
+        }).then(response => response.json()).then(data12 => {
+            if (data12.data === "0") {
+                setTimeout(()=>{
+                    document.getElementById("changecommandsuccess").className = "alert alert-success alert-dismissible"
+                }, 300)
+                getcommandlist()
+                getcommands()
+            } else {
+                setTimeout(()=>{
+                    document.getElementById("changecommanderror").className = "alert alert-danger alert-dismissible"
+                }, 300)
+                getcommandlist()
+                getcommands()
+            }
+        }).catch(error => {
+            console.log(error)
+        })
+    }
+    function clearaddcommand() {
+        document.getElementById("addcall").value = ""
+        document.getElementById("addcommand").value = ""
+    }
+    function addcommand() {
+        document.getElementById("changecommandsuccess").className = "alert alert-success alert-dismissible d-none"
+        document.getElementById("changecommanderror").className = "alert alert-danger alert-dismissible d-none"
+        document.getElementById("addcommandhas").className = "alert alert-danger alert-dismissible d-none"
+        call = document.getElementById("addcall").value
+        command = document.getElementById("addcommand").value
+        data11 = {
+            method: "add",
+            name: name,
+            belong: belong,
+            call: call,
+            command: command
+        }
+        clearaddcommand()
+        fetch("/adddeletecommand", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data11)
+        }).then(res => res.json()).then(data12 => {
+            console.log(data12)
+            if(data12.data === "0") {
+                setTimeout(()=>{
+                    document.getElementById("changecommandsuccess").className = "alert alert-success alert-dismissible"
+                }, 300)
+                getcommandlist()
+                getcommands()
+            } else if(data12.data === "1") {
+                setTimeout(()=>{
+                    document.getElementById("addcommandhas").className = "alert alert-danger alert-dismissible"
+                }, 300)
+                getcommandlist()
+                getcommands()
+            } else {
+                setTimeout(()=>{
+                    document.getElementById("changecommanderror").className = "alert alert-danger alert-dismissible"
+                }, 300)
+                getcommandlist()
+                getcommands()
+            }
+        }).catch(error => {
+            console.log(error)
+        })
+    }
+    function showchangewarning(commandid) {
+        item5 = new bootstrap.Modal(document.getElementById("change_command_warning"))
+        document.getElementById("surechangecommand").onclick = () => changecommand(commandid)
+        item5.show()
+    }
+    function showcommand() {
+        getcommandlist()
+        item4 = new bootstrap.Modal(document.getElementById("changecommand"))
+        item4.show()
     }
 </script>
 </body>

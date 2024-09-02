@@ -133,26 +133,49 @@
                     &nbsp;MCC Bot Manager
                 </span>
             </div>
-            <div class="nav-item dropdown">
-                <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown"
-                   aria-label="Open user menu">
-                    <span class="avatar avatar-sm" style="background-image: url('https://mineskin.eu/avatar/{{.username}}')"></span>
-                    <div class="d-none d-xl-block ps-2">
-                        <div>{{.username}}</div>
-                        <div class="mt-1 small text-secondary">权限等级:{{.permission}}</div>
+            <div class="navbar-nav flex-row order-md-last">
+                <div class="nav-item dropdown">
+                    <button type="button" class="nav-link px-0" onclick="shownotice()" data-bs-toggle="tooltip" data-bs-placement="bottom" title="更新日志">
+                        <!-- Download SVG icon from http://tabler-icons.io/i/bell -->
+                        <svg t="1725190791501" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5439" width="24" height="24"><path d="M897.28 170.666667h-750.933333c-28.16 0-51.2 23.04-51.2 51.2v665.6c0 28.16 23.04 51.2 51.2 51.2h750.933333c28.16 0 51.2-23.04 51.2-51.2V221.866667c0-28.16-22.613333-51.2-51.2-51.2z m-17.066667 699.733333h-716.8V238.933333h716.8v631.466667z" fill="#2c2c2c" p-id="5440"></path><path d="M744.96 699.733333H333.226667c-18.346667 0-32.853333-14.933333-32.853334-32.853333v-2.133333c0-18.346667 14.933333-32.853333 32.853334-32.853334h411.733333c18.346667 0 32.853333 14.933333 32.853333 32.853334v2.133333c0 17.92-14.506667 32.853333-32.853333 32.853333zM743.68 546.133333h-221.866667c-18.773333 0-34.133333-15.36-34.133333-34.133333s15.36-34.133333 34.133333-34.133333h221.866667c18.773333 0 34.133333 15.36 34.133333 34.133333s-14.933333 34.133333-34.133333 34.133333zM718.08 307.2c-18.773333 0-34.133333-15.36-34.133333-34.133333V119.466667c0-18.773333 15.36-34.133333 34.133333-34.133334s34.133333 15.36 34.133333 34.133334v153.6c0 18.773333-14.933333 34.133333-34.133333 34.133333zM325.546667 307.2c-18.773333 0-34.133333-15.36-34.133334-34.133333V119.466667c0-18.773333 15.36-34.133333 34.133334-34.133334s34.133333 15.36 34.133333 34.133334v153.6c0 18.773333-14.933333 34.133333-34.133333 34.133333z" fill="#2c2c2c" p-id="5441"></path></svg>
+                    </button>
+                </div>
+                &nbsp;&nbsp;
+                <div class="nav-item dropdown">
+                    <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown"
+                       aria-label="Open user menu">
+                        <span class="avatar avatar-sm" style="background-image: url('https://mineskin.eu/avatar/{{.username}}')"></span>
+                        <div class="d-none d-xl-block ps-2">
+                            <div>{{.username}}</div>
+                            <div class="mt-1 small text-secondary">权限等级:{{.permission}}</div>
+                        </div>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow"
+                         style="left: 50%; transform: translateX(-50%);">
+                        <a href="/setting" class="dropdown-item">账户信息</a>
+                        <a href="https://gitee.com/sg250/MCC-Web/issues" class="dropdown-item" target="_blank">问题反馈</a>
+                        <a href="/logout" class="dropdown-item">登出</a>
                     </div>
-                </a>
-                <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow"
-                     style="left: 50%; transform: translateX(-50%);">
-                    <a href="/setting" class="dropdown-item">账户信息</a>
-                    <a href="https://gitee.com/sg250/MCC-Web/issues" class="dropdown-item" target="_blank">问题反馈</a>
-                    <a href="/logout" class="dropdown-item">登出</a>
                 </div>
             </div>
         </div>
     </header>
     <div class="page-wrapper">
         <div id="tip"></div>
+        <div class="modal fade1" id="notice" tabindex="-1">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">更新日志</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div id="notice_content" style="max-height: 70vh; overflow-y: auto;"></div>
+                    <div class="modal-footer">
+                        <button class="btn align-items-end" data-bs-dismiss="modal" aria-label="Close">确定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="modal fade1" id="addbot" tabindex="-1">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
@@ -228,7 +251,7 @@
                                          stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path
                                             d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M21 21l-6 -6"/></svg>
                                   </span>
-                                    <input type="text" value="" class="form-control" placeholder="通过Bot名搜索" aria-label="Search"/>
+                                    <input type="text" value="" class="form-control" placeholder="通过Bot名搜索" aria-label="Search" id="searchInput"/>
                                 </div>
                             </div>
                             <div class="card-body p-0 scrollable">
@@ -315,6 +338,7 @@
         modal.show()
     }
     function getbotlist() {
+        document.getElementById("searchInput").value = "";
         const botItem = document.getElementById("botlist");
 
         // 初始时将列表隐藏
@@ -409,7 +433,26 @@
         }
         validateForm(); // 检查表单状态
     });
+    document.getElementById('searchInput').addEventListener('input', function() {
+        // 获取输入框的值并转换为小写
+        var searchValue = this.value.toLowerCase();
 
+        // 获取所有 botlist 容器中的链接元素
+        var botItems = document.querySelectorAll('#botlist .nav-link');
+
+        // 遍历所有 bot 项目
+        botItems.forEach(function(item) {
+            // 获取当前项目的 id (即 bot 名) 并转换为小写
+            var botName = item.id.toLowerCase();
+
+            // 根据输入框的内容显示或隐藏项目
+            if (botName.includes(searchValue)) {
+                item.style.display = ''; // 显示
+            } else {
+                item.style.display = 'none'; // 隐藏
+            }
+        });
+    });
 
     function getslist(){
         fetch("/getserverlist",{
@@ -473,6 +516,26 @@
             }, 5000)
         })
     }
+    function shownotice() {
+        notice_item = new bootstrap.Modal(document.getElementById("notice"))
+        notice_item.show()
+        fetch("/getnotice", {
+            method: "GET",
+        }).then(response => response.json()).then(data => {
+            document.getElementById("notice_content").innerHTML = ""
+            for (item5 of data.data) {
+                content = `
+                    <div class="modal-body">
+                    ${item5.Message}
+</div>
+               `
+                document.getElementById("notice_content").innerHTML = content + document.getElementById("notice_content").innerHTML
+            }
+        }).catch(error => {
+            show_tip(error)
+        })
+    }
+    shownotice()
 </script>
 </body>
 </html>

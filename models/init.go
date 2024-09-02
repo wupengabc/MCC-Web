@@ -23,5 +23,5 @@ func init() {
 	}
 	Db.SetMaxIdleConns(3)
 	Db.SetMaxOpenConns(10)
-	Db.ShowSQL(false)
+	Db.ShowSQL(true)
 }

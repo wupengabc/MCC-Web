@@ -24,5 +24,8 @@ func init() {
 	beego.Router("/getbotconfig", &controllers.MainController{}, "post:GetBotConfig")
 	beego.Router("/updatebot", &controllers.MainController{}, "post:UpdateBot")
 	beego.Router("/deletebot", &controllers.MainController{}, "post:DeleteBot")
+	beego.Router("/getnotice", &controllers.MainController{}, "get:GetNotice")
+	beego.Router("/changecommand", &controllers.MainController{}, "post:ChangeCommand")
+	beego.Router("/adddeletecommand", &controllers.MainController{}, "post:AddDeleteCommand")
 	beego.Router("/test", &controllers.MainController{}, "get:Test")
 }
