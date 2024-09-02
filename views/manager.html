@@ -403,7 +403,7 @@
             </div>
             <br>
             <div class="sc row" id="sc">
-                <div class="commands col-11">
+                <div class="commands col-11" id="card1">
                     <button class="btn btn-sm">快捷指令:</button>&nbsp
                     <div id="card"></div>
                 </div>
@@ -557,7 +557,7 @@
         model.show();
     }
     function scrollRight() {
-        var container = document.getElementById("card");
+        var container = document.getElementById("card1");
         var buttons = Array.from(container.querySelectorAll('.btn')); // 获取所有按钮
         var containerWidth = container.clientWidth; // 获取容器宽度
         var containerScrollLeft = container.scrollLeft; // 当前滚动位置
@@ -581,7 +581,7 @@
         }
     }
     function toleft() {
-        var container = document.getElementById("card");
+        var container = document.getElementById("card1");
         var buttons = Array.from(container.querySelectorAll('.btn')); // 获取所有按钮
         var containerWidth = container.clientWidth; // 获取容器宽度
         var containerScrollLeft = container.scrollLeft; // 当前滚动位置
