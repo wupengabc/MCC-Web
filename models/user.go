@@ -78,3 +78,41 @@ func CheckUser(username, password string) (int, error, int) {
 		return 3, nil, 0
 	}
 }
+
+func GetUser(username string) bool {
+	var user Users
+	status, err2 := Db.Where("username = ?", username).Get(&user)
+	if err2 != nil {
+		return true
+	}
+	if status {
+		return true
+	}
+	return false
+}
+
+func ChangeUsername(oldusername, newusername string) bool {
+	user := Users{Username: newusername}
+	_, err := Db.Where("username = ?", oldusername).Cols("username").Update(&user)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func ChangePassword(username, oldpassword, newpassword string) int {
+	var user Users
+	status, err := Db.Where("username = ? and password = ?", username, oldpassword).Get(&user)
+	if err != nil {
+		return 0
+	}
+	if status {
+		user.Password = newpassword
+		_, err := Db.Where("username = ?", username).Cols("password").Update(&user)
+		if err != nil {
+			return 0
+		}
+		return 1
+	}
+	return 2
+}

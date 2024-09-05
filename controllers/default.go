@@ -287,7 +287,11 @@ func (c *WebSocketController) ForwardWS() {
 			fmt.Println("Failed to upgrade WebSocket connection:", err)
 			return
 		}
-		defer clientConn.Close()
+		defer func(clientConn *websocket.Conn) {
+			err := clientConn.Close()
+			if err != nil {
+			}
+		}(clientConn)
 
 		// 连接目标 WebSocket 服务器
 		serverConn, _, err := websocket.DefaultDialer.Dial(targetWSURL, nil)
@@ -654,7 +658,7 @@ func (c *MainController) GetServerList() {
 		}
 		return
 	} else {
-		c.Data["json"] = map[string]interface{}{"code": 401, "message": "权限不足"}
+		c.Data["json"] = map[string]interface{}{"code": 401, "data": "权限不足"}
 		err := c.ServeJSON()
 		if err != nil {
 			return
@@ -693,7 +697,7 @@ func (c *MainController) Getadd() {
 			}
 		}
 	} else {
-		c.Data["json"] = map[string]interface{}{"code": 401, "message": "权限不足"}
+		c.Data["json"] = map[string]interface{}{"code": 401, "data": "权限不足"}
 		err := c.ServeJSON()
 		if err != nil {
 			return
@@ -1001,7 +1005,170 @@ func (c *MainController) GetNotice() {
 			return
 		}
 	} else {
-		c.Data["json"] = map[string]interface{}{"code": 401, "msg": "权限不足"}
+		c.Data["json"] = map[string]interface{}{"code": 401, "data": "权限不足"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+	}
+}
+
+func (c *MainController) Setting() {
+	username := c.GetSession("username")
+	permission := c.GetSession("permission")
+	if c.GetSession("username") != nil {
+		c.TplName = "setting.html"
+		c.Data["username"] = username
+		c.Data["permission"] = permission
+		count := models.GetCountByBelong(username.(string))
+		c.Data["count"] = count
+		return
+	}
+	c.Redirect("/login", 302)
+	return
+}
+
+type ChangeUsername struct {
+	Oldusername string `json:"oldusername"`
+	Newusername string `json:"newusername"`
+}
+
+func (c *MainController) ChangeUsername() {
+	username := c.GetSession("username")
+	permission := c.GetSession("permission")
+	intpermission, _ := strconv.Atoi(fmt.Sprintf("%v", permission))
+	body := c.Ctx.Input.RequestBody
+	var data ChangeUsername
+	if err := json.Unmarshal(body, &data); err != nil {
+		c.Ctx.Output.SetStatus(http.StatusBadRequest)
+		c.Data["json"] = map[string]string{"error": "Invalid JSON"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+		return
+	}
+	if username.(string) == data.Oldusername || intpermission > 7 {
+		count := models.GetCountByBelong(username.(string))
+		if count > 0 {
+			c.Data["json"] = map[string]interface{}{"code": 401, "data": "请删除全部机器人后再尝试修改"}
+			err := c.ServeJSON()
+			if err != nil {
+				return
+			}
+			return
+		} else {
+			status := models.GetUser(data.Newusername)
+			if status {
+				c.Data["json"] = map[string]interface{}{"code": 401, "data": "用户名已存在"}
+				err := c.ServeJSON()
+				if err != nil {
+					return
+				}
+				return
+			} else {
+				if data.Newusername == "" {
+					c.Data["json"] = map[string]interface{}{"code": 401, "data": "新用户名不能为空"}
+					err := c.ServeJSON()
+					if err != nil {
+						return
+					}
+					return
+				} else {
+					result := models.ChangeUsername(data.Oldusername, data.Newusername)
+					if result {
+						c.Data["json"] = map[string]interface{}{"code": 200, "data": "修改成功"}
+						err := c.DestroySession()
+						if err != nil {
+							return
+						}
+						err = c.ServeJSON()
+						if err != nil {
+							return
+						}
+						return
+					} else {
+						c.Data["json"] = map[string]interface{}{"code": 401, "data": "修改失败, 请重试"}
+						err := c.ServeJSON()
+						if err != nil {
+							return
+						}
+						return
+					}
+				}
+			}
+		}
+	} else {
+		c.Data["json"] = map[string]interface{}{"code": 401, "data": "权限不足, 你无法修改其他人的用户名"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+	}
+}
+
+type ChangePassword struct {
+	Username    string `json:"username"`
+	Oldpassword string `json:"oldpassword"`
+	Newpassword string `json:"newpassword"`
+}
+
+func (c *MainController) ChangePassword() {
+	username := c.GetSession("username")
+	permission := c.GetSession("permission")
+	intpermission, _ := strconv.Atoi(fmt.Sprintf("%v", permission))
+	body := c.Ctx.Input.RequestBody
+	var data ChangePassword
+	if err := json.Unmarshal(body, &data); err != nil {
+		c.Ctx.Output.SetStatus(http.StatusBadRequest)
+		c.Data["json"] = map[string]string{"error": "Invalid JSON"}
+		err := c.ServeJSON()
+		if err != nil {
+			return
+		}
+		return
+	}
+	if username.(string) == data.Username || intpermission >= 7 {
+		if data.Newpassword == "" {
+			c.Data["json"] = map[string]interface{}{"code": 401, "msg": "密码不能为空"}
+			err := c.ServeJSON()
+			if err != nil {
+				return
+			}
+		} else {
+			result := models.ChangePassword(data.Username, data.Oldpassword, data.Newpassword)
+			if result == 0 {
+				c.Data["json"] = map[string]interface{}{"code": 401, "msg": "服务器错误, 请稍后再试"}
+				err := c.ServeJSON()
+				if err != nil {
+					return
+				}
+			} else if result == 1 {
+				c.Data["json"] = map[string]interface{}{"code": 200, "msg": "密码修改成功"}
+				err := c.DestroySession()
+				if err != nil {
+					return
+				}
+				err = c.ServeJSON()
+				if err != nil {
+					return
+				}
+			} else if result == 2 {
+				c.Data["json"] = map[string]interface{}{"code": 401, "msg": "旧密码错误"}
+				err := c.ServeJSON()
+				if err != nil {
+					return
+				}
+			} else {
+				c.Data["json"] = map[string]interface{}{"code": 401, "msg": "未知错误, 请稍后再试"}
+				err := c.ServeJSON()
+				if err != nil {
+					return
+				}
+			}
+		}
+	} else {
+		c.Data["json"] = map[string]interface{}{"code": 401, "data": "权限不足"}
 		err := c.ServeJSON()
 		if err != nil {
 			return

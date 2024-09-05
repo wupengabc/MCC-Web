@@ -27,5 +27,8 @@ func init() {
 	beego.Router("/getnotice", &controllers.MainController{}, "get:GetNotice")
 	beego.Router("/changecommand", &controllers.MainController{}, "post:ChangeCommand")
 	beego.Router("/adddeletecommand", &controllers.MainController{}, "post:AddDeleteCommand")
+	beego.Router("/setting", &controllers.MainController{}, "get:Setting")
+	beego.Router("/changeusername", &controllers.MainController{}, "post:ChangeUsername")
+	beego.Router("/changepassword", &controllers.MainController{}, "post:ChangePassword")
 	beego.Router("/test", &controllers.MainController{}, "get:Test")
 }
